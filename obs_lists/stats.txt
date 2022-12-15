@@ -1,0 +1,32 @@
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088281088 -d /astro/mwaeor/MWA/data/
+0.2421002083486541
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088281208 -d /astro/mwaeor/MWA/data/
+0.24212687039296096
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088281328 -d /astro/mwaeor/MWA/data/
+0.24207770318375957
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088289384 -d /astro/mwaeor/MWA/data/
+0.24204278370690724
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088289136 -d /astro/mwaeor/MWA/data/
+0.24212598043774802
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088289016 -d /astro/mwaeor/MWA/data/
+0.24209156226478146
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088288896 -d /astro/mwaeor/MWA/data/
+0.2420748671555968
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088288776 -d /astro/mwaeor/MWA/data/
+0.24204233309667286
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088288648 -d /astro/mwaeor/MWA/data/
+0.24210114618120446
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088288528 -d /astro/mwaeor/MWA/data/
+0.24206723776106553
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088288408 -d /astro/mwaeor/MWA/data/
+0.2420824430401627
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088375792 -d /astro/mwaeor/MWA/data/
+0.2418190754397235
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088375672 -d /astro/mwaeor/MWA/data/
+0.24191368105843658
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088375544 -d /astro/mwaeor/MWA/data/
+0.2418906098144351
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088375304 -d /astro/mwaeor/MWA/data/
+0.24194216244156486
+(pyuvdata) nbarry@garrawarla-1:/astro/mwaeor/nbarry/gar_scripts> python mwaf_stats.py -o 1088375184 -d /astro/mwaeor/MWA/data/
+0.24191267563435104
