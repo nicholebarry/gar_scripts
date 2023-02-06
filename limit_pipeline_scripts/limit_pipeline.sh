@@ -3,19 +3,13 @@
 Help()
 {
    # Display Help
-   echo "Script to submit conversions from gpubox files to uvfits with van Vleck corrections into the OzStar queue"
+   echo "Script to submit conversions from gpubox files to uvfits with van Vleck corrections,"
+   echo "make WODEN simulations, make flagging cuts, and transfer to Ozstar"
    echo "All binary options require a 1 to be passed to be activated, i.e. -o 1"
    echo
-   echo "Syntax: nohup ./uvfits_pipeline.sh [-o -d -p -a -c -b -t -g -w -n -m -C] >> ~/log.txt &"
+   echo "Syntax: nohup ./limit_pipeline.sh [-o -d -p -a -c -b -t -g -w -n -m -C] >> ~/log.txt &"
    echo "options:"
    echo "-o (text file with observation list, required), "
-   echo "-d (path to the data -- gpubox files, metadata, and mwaf files, required), "
-   echo "-p (output path for final data projects, default=/fred/oz048/MWA/data/2013/van_vleck_corrected/), "
-   echo "-a (use aoflagger flags, default=1), "
-   echo "-c (remove theoretical coarse band, default=0), "
-   echo "-b (remove broadband RFI via SSINS by flagging entire time steps, default=1)"
-   echo "-t (remove TV RFI via SSINS by flagging entire time steps, default=1), "
-   echo "-g (create diagnostic waterfall SSINS plots, default=0), "
    echo "-w (wallclock time, default=5:00:00), "
    echo "-n (number of slots, default=1), "
    echo "-m (memory allocation, default=120G), "
@@ -26,17 +20,10 @@ Help()
 
 
 #Parse flags for inputs
-while getopts ":o:d:p:a:c:b:t:g:w:n:m:h:C:" option
+while getopts ":o:w:n:m:h:C:" option
 do
    case $option in
-        o) obs_file_name="$OPTARG";;            
-        d) data_path=$OPTARG;;                  
-        p) output_path=$OPTARG;;                  
-        a) use_aoflagger_flags=$OPTARG;;                 
-        c) remove_coarse_band=$OPTARG;;                  
-        b) broadband=$OPTARG;;                  
-        t) tv=$OPTARG;;                  
-        g) plots=$OPTARG;;                  
+        o) obs_file_name="$OPTARG";;                          
         w) wallclock_time=$OPTARG;;             
         n) ncores=$OPTARG;;                     
         m) mem=$OPTARG;;                        
@@ -54,20 +41,17 @@ done
 #Manual shift to the next flag
 shift $(($OPTIND - 1))
 
-#Throw error if no file path to FHD directory
-if [ -z ${data_path} ]
-then
-   echo "Need to specify a file path to data"
-   exit 1
-fi
+#Manually set defaults for limit production
+data_path='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/'                  
+output_path='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/'  
+manta_dir='/astro/mwaeor/nbarry/nbarry/manta-ray-client/'      
+use_aoflagger_flags=0             
+remove_coarse_band=1               
+broadband=1    
+tv=1          
+plots=1
 
-#Throw error if no file path to FHD directory
-if [ -z ${output_path} ]
-then
-   output_path='/fred/oz048/MWA/data/2013/van_vleck_corrected/'
-fi
 mkdir -p ${output_path}/logs
-
 
 #Throw error if no file path to FHD directory
 if [ -z ${obs_file_name} ]
@@ -75,13 +59,6 @@ then
    echo "Need to specify a text file with obs ids"
    exit 1
 fi
-
-#Set default values for optional parameters.
-if [ -z ${use_aoflagger_flags} ]; then use_aoflagger_flags=1; fi
-if [ -z ${broadband} ]; then broadband=1; fi
-if [ -z ${tv} ]; then tv=1; fi
-if [ -z ${plots} ]; then plots=0; fi
-if [ -z ${check} ]; then check=0; fi
 
 #Set typical wallclock_time for standard PS weights cubes
 if [ -z ${wallclock_time} ]; then wallclock_time=5:00:00; fi
@@ -92,6 +69,12 @@ if [ -z ${mem} ]; then mem=120G; fi
 #Set typical cores.
 if [ -z ${ncores} ]; then ncores=1; fi
 
+#Grab day from filename
+obs_file_basename=$(basename $obs_file_name)
+obs_file_dirname=$(dirname $obs_file_name)
+obs_file_split=$(echo $obs_file_basename | tr "_" "\n")
+obs_file_split_arr=($obs_file_split)
+day=${obs_file_split_arr[0]}
 
 #Read the obs file and put into an array, skipping blank lines if they exist
 i=0
@@ -99,26 +82,21 @@ while read line
 do
    if [ ! -z "$line" ]; then
       obs_id_array[$i]=$line
-      cp ${data_path}/${line}/${line}.metafits $output_path
-      if [ $check -eq 1 ]; then
-         if [ ! -f ${output_path}/SSINS/${line}.uvfits ]; then
-            obs_id_array_missing[$i]=$line
-         fi
-      fi
+      #cp ${data_path}/${line}/${line}.metafits $output_path
       i=$((i + 1))
    fi
 done < "$obs_file_name"
 
-if [ $check -eq 1 ]; then
-   nobs_missing=${#obs_id_array_missing[@]}
-   if [ $nobs_missing -eq 0 ]; then
-      echo "No missing uvfits"
-   else 
-      echo "Missing uvfits"
-      echo ${obs_id_array[@]}
-   fi
+#Make csv file for download
+printf 'obs_id=%s, job_type=d, download_type=vis\n' "${obs_id_array[@]}" > ${manta_dir}${day_name[0]}.csv
 
-else
+source ${manta_dir}env/bin/activate
+mwa_client -c ${manta_dir}${day_name[0]}.csv -d ${data_path}
+
+cd ${data_path}
+for FILE in ${data_path}*.tar; do tar -xvf $FILE; done
+for FILE in ${data_path}*.zip; do unzip $FILE; done
+
    nobs=${#obs_id_array[@]}
    ((nobs=$nobs-1))
 
@@ -149,6 +127,8 @@ else
    day_name=$(echo $obs_file | tr "." "\n")
    printf '%s\n' "${ssins_obs_id_array[@]}" > ${obs_dir}/${day_name[0]}_ssins.txt
 
+nohup /astro/mwaeor/nbarry/nbarry/gar_scripts/woden_scripts/sbatcher.sh -f ${obs_dir}/${day_name[0]}_ssins.txt -l 1 >> ./log_woden.txt &
+
    for obs_id in ${ssins_obs_id_array[@]}
    do
       mv ${output_path}${obs_id}.metafits ${output_path}SSINS/
@@ -157,7 +137,6 @@ else
       rsync  ${obs_dir}/${day_name[0]}_ssins.txt nbarry@ozstar.swin.edu.au:'/home/nbarry/MWA/pipeline_scripts/bash_scripts/ozstar/obs_list/2014/'${obs_dir}/${day_name[0]}_ssins.txt
    done
 
-fi
 
 
 

@@ -58,17 +58,22 @@ def main():
         UV = freq_integration(UV)
         UV.write_uvfits(output_path + prefix + obs_id + '.uvfits')
 
+        flag_stats(UV, output_path + prefix + obs_id + '_flag_stats.txt')
+
 #********************************
 def van_vleck_corrections(obs_id, coarse_id, data_path, output_path, use_aoflagger_flags, remove_coarse_band):
         # Apply van vleck corrections (and other options) to gpubox files and write a uvfits
 
         UV = UVData()
 
-        gpubox = [glob.glob(data_path + obs_id + '/' + obs_id + '*_gpubox'+coarse_channel+'*') for coarse_channel in coarse_id]
+        #gpubox = [glob.glob(data_path + obs_id + '/' + obs_id + '*_gpubox'+coarse_channel+'*') for coarse_channel in coarse_id]
+        gpubox = [glob.glob(data_path + '/' + obs_id + '*_gpubox'+coarse_channel+'*') for coarse_channel in coarse_id]
         gpubox = [ item for elem in gpubox for item in elem]
-        mwaf = [glob.glob(data_path + obs_id + '/' + obs_id + '_' + coarse_channel+'.mwaf') for coarse_channel in coarse_id]
+        #mwaf = [glob.glob(data_path + obs_id + '/' + obs_id + '_' + coarse_channel+'.mwaf') for coarse_channel in coarse_id]
+        mwaf = [glob.glob(data_path + '/' + obs_id + '_' + coarse_channel+'.mwaf') for coarse_channel in coarse_id]
         mwaf = [ item for elem in mwaf for item in elem]
-        filelist = [data_path + obs_id + '/' + obs_id + '.metafits', data_path + obs_id + '/' + obs_id + '_metafits_ppds.fits', *mwaf, *gpubox]
+        #filelist = [data_path + obs_id + '/' + obs_id + '.metafits', data_path + obs_id + '/' + obs_id + '_metafits_ppds.fits', *mwaf, *gpubox]
+        filelist = [data_path + '/' + obs_id + '.metafits', data_path + '/' + obs_id + '_metafits_ppds.fits', *mwaf, *gpubox]
         UV.read_mwa_corr_fits(filelist,use_aoflagger_flags=use_aoflagger_flags,correct_cable_len=True,
           remove_coarse_band=remove_coarse_band,correct_van_vleck=True,phase_to_pointing_center=True)
 
@@ -168,6 +173,23 @@ def SSINS(UV, obs_id, output_path, plots, broadband, tv, prefix):
         uvutils.apply_uvflag(UV, uvf) #by default, applies OR to flags in uvd and new flag object
 
         return UV
+
+#********************************
+
+#********************************
+def flag_stats(UV, output_filename):
+        # Perform freq integration on UV object
+
+        flags = UVFlag(UV)
+        unflagged_count = np.count_nonzero(flags.weights_array > 0)
+        baseline_count = flags.weights_array.size
+        percent_unflagged = unflagged_count / baseline_count
+
+        f = open(output_filename, "w")
+        f.write(percent_unflagged)
+        f.close()
+
+        return 
 
 #********************************
 
