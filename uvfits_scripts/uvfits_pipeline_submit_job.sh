@@ -18,6 +18,9 @@ obs_id=${obsids[$SLURM_ARRAY_TASK_ID]}
 echo $obs_id
 echo 
 
+#Python is dumb
+export TMPDIR=/nvmetmp/
+
 python /astro/mwaeor/nbarry/nbarry/gar_scripts/uvfits_scripts/uvfits_pipeline_corrections.py --obs_id=$obs_id --data_path=$data_path --output_path=$output_path --use_aoflagger_flags=$use_aoflagger_flags --remove_coarse_band=$remove_coarse_band --broadband=$broadband --tv=$tv --plots=$plots
 
 if [ $? -eq 0 ]

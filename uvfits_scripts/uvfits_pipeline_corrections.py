@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import glob
+from astropy.io import fits
 from pyuvdata import UVData, UVFlag
 from pyuvdata import utils as uvutils
 import matplotlib.pyplot as plt
@@ -45,20 +46,21 @@ def main():
         output_path = args.output_path
         prefix = 'SSINS/'
         os.makedirs(output_path + prefix, exist_ok=True)
+        tmp_path='/nvmetmp/'
 
         # List of gpu files to cycle through
         coarse_list = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
                 '20','21','22','23','24'] #do them all at once
 
-        UV = van_vleck_corrections(obs_id, coarse_list, data_path, output_path, args.use_aoflagger_flags, args.remove_coarse_band)
+        UV = van_vleck_corrections(obs_id, coarse_list, data_path, tmp_path, args.use_aoflagger_flags, args.remove_coarse_band)
 
-        UV = SSINS(UV, obs_id, output_path, args.plots, args.broadband, args.tv, prefix)        
+        UV = SSINS(UV, obs_id, output_path, tmp_path, args.plots, args.broadband, args.tv, prefix)        
 
         UV = time_integration(UV)
         UV = freq_integration(UV)
         UV.write_uvfits(output_path + prefix + obs_id + '.uvfits')
 
-        flag_stats(UV, output_path + prefix + obs_id + '_flag_stats.txt')
+        flag_stats(output_path + prefix + obs_id + '.uvfits', output_path + prefix + obs_id + '_flag_stats.txt')
 
 #********************************
 def van_vleck_corrections(obs_id, coarse_id, data_path, output_path, use_aoflagger_flags, remove_coarse_band):
@@ -110,7 +112,7 @@ def time_integration(UV):
 
 #********************************
 
-def SSINS(UV, obs_id, output_path, plots, broadband, tv, prefix):
+def SSINS(UV, obs_id, output_path, tmp_path, plots, broadband, tv, prefix):
         # Apply SSINS flagging and return a UV object
 
         sig_thresh = 5
@@ -120,7 +122,7 @@ def SSINS(UV, obs_id, output_path, plots, broadband, tv, prefix):
                       'TV9': [1.95e8, 2.02e8]}
 
         ss = SS()
-        ss.read(output_path+obs_id +'.uvfits', diff=True)
+        ss.read(tmp_path+obs_id +'.uvfits', diff=True)
         ss.apply_flags(flag_choice='original')
         ins = INS(ss)
 
@@ -177,16 +179,23 @@ def SSINS(UV, obs_id, output_path, plots, broadband, tv, prefix):
 #********************************
 
 #********************************
-def flag_stats(UV, output_filename):
+def flag_stats(uvfits_filename, output_filename):
         # Perform freq integration on UV object
 
-        flags = UVFlag(UV)
-        unflagged_count = np.count_nonzero(flags.weights_array > 0)
-        baseline_count = flags.weights_array.size
-        percent_unflagged = unflagged_count / baseline_count
+        #Pyuvdata is messed up
+        #flags = UVFlag(UV)
+        #unflagged_count = np.count_nonzero(flags.weights_array > 0)
+        #baseline_count = flags.weights_array.size
+        #percent_unflagged = unflagged_count / baseline_count
+
+        hdu = fits.open(uvfits_filename)
+        d = hdu['PRIMARY'].data['Data']
+        unflagged_count = np.count_nonzero(d[:,:,:,:,:,0,2]>0)
+        total_count = d[:,:,:,:,:,0,2].size
+        percent_unflagged = unflagged_count / total_count
 
         f = open(output_filename, "w")
-        f.write(percent_unflagged)
+        f.write("%s" %percent_unflagged)
         f.close()
 
         return 

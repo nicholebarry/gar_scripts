@@ -242,12 +242,15 @@ do
    sbatch_metadata=${sbatch_dir_i}'/sbatch_metadata_'${id_list[0]}'-'${id_list[-1]}'.txt'
    echo -e 'observation \t band \t job_id \t walltime \t memory \t json_hanged \t output_exists \t output_size' > $sbatch_metadata
    i=0
+   b=0
+   unset bad_obs
    for obs_id in ${obs_id_array[@]}
    do
       while [ `squeue -u $(whoami) | grep ${id_list[$i]} | wc -l` -ge 1 ]; do
          sleep 100
       done
 
+      redo_logic=0
       for band_i in {1..24..1}
       do
          time_elapsed=$(sacct --format="CPUTimeRAW" -j ${id_list[$i]}_$band_i -n | sed '2p;d')
@@ -270,20 +273,46 @@ do
             json_file_logic=0
          fi
 
+         if [ "$file_logic" -eq "0" ]; then
+            redo_logic=1
+         fi 
          file_size=$(ls -lh $band_filename | cut -d " " -f5)
 
          echo -e ${obs_id}' \t '${band_i}' \t '${id_list[$i]}' \t '${time_elapsed}' \t '${mem_used}' \t '${json_file_logic}' \t '${file_logic}' \t '${file_size} >> $sbatch_metadata
       done
 
+      if [ "$redo_logic" -eq "0" ]; then
+         bad_obs[$b]=$obs_id
+         b=$((b + 1))
+      fi
+
       i=$((i + 1))
    done
+
+   #Rerun any observations with failed jobs
+   unset id_list
+   if [ "$b" -ne "0" ]; then
+      for obs_id in ${bad_obs[@]}
+      do
+         sbatch_file=${sbatch_dir_i}'/'${obs_id}'/sbatch_'${obs_id}'.sh'
+         message=$(sbatch $sbatch_file)
+         message=($message)
+         id=`echo ${message[3]}`
+         id_list+=($id)
+      done
+
+      i=0
+      while [ `squeue -u $(whoami) | grep ${id_list[$i]} | wc -l` -ge 25 ]; do
+         sleep 100
+      done
+   fi
 
    j=$((j + 1))
 
 done #end of for loop for sbatch_dir
 
 
-if [ -n ${limit} ]; then
+#if [ -n ${limit} ]; then
 
    total_dir="/astro/mwaeor/nbarry/nbarry/woden/total/data/"
    nobs=${#obs_id_array[@]}
@@ -301,6 +330,5 @@ if [ -n ${limit} ]; then
       rsync -r ${total_dir}${obs_id} nbarry@ozstar.swin.edu.au:'/fred/oz048/MWA/CODE/FHD/fhd_nb_data_gd_woden_calstop/woden_models/combined_uvfits/'
    done
 
-fi
+#fi
 
-done

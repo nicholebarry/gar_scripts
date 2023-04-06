@@ -29,6 +29,10 @@ fi
 unset __conda_setup
 conda activate pyuvdata
 #module load astropy
+
+#Python is dumb
+export TMPDIR=/nvmetmp/
+
 python /astro/mwaeor/nbarry/nbarry/gar_scripts/woden_scripts/combine_uvfits.py --obs_id=$obs_id
 
 if [ $? -eq 0 ]

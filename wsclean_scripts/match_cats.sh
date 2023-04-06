@@ -1,0 +1,1 @@
+stilts tskymatch2 error=20 in1=LoBES_EoR0_FULL_FINAL_SpecGaussModCat_03MAR2022.fits in2=fullpointing_8192_decon_nogalaxy-0000-image_bane_aegean_sources_comp.fits find=best1 ra1=ra dec1=dec ra2=ra dec2=dec out=fullpointing_0000_match_with_lobes_nogalaxy.fits

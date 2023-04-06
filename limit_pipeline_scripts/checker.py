@@ -11,7 +11,7 @@ def main():
     #file_name = "CasA_2s_80kHz_hbeam__band"
     data_path = "/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float/data/"
     file_name = "EDA2_prior_mono_si_gp15_float_2s_80kHz_hbeam__band"
-    obsfile_name = "/astro/mwaeor/nbarry/nbarry/gar_scripts/obs_lists/33_ssins.txt"
+    obsfile_name = "/astro/mwaeor/nbarry/nbarry/gar_scripts/obs_lists/34_ssins.txt"
 
     coarse_list = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
                 '20','21','22','23','24'] #do them all at once
