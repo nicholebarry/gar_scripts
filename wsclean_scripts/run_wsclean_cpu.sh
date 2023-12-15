@@ -4,7 +4,7 @@
 #SBATCH --time=20:00:00
 #SBATCH --account=mwaeor
 #SBATCH --nodes=1
-#SBATCH --mem=370gb
+#SBATCH --mem=150gb
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=20
 
@@ -18,10 +18,23 @@
 #module load openblas/0.2.20
 
 module load idg/0.7
-module load wsclean/2.9
+module load wsclean
 
-#module load cuda/9.0.176
+final_dir=/astro/mwaeor/nbarry/nbarry/wsclean/eg_sim_wsclean_files/data
+cd $final_dir
 
+time wsclean -name eg_sim_zenith_6144_ \
+     -size 6144 6144 -scale 0.004 \
+     -niter 15000 -pol I -auto-threshold 1.0 -auto-mask 5 \
+     -weight briggs 0 -multiscale -mgain 0.6 \
+     -j 28 -abs-mem 150 -no-mf-weighting \
+     -use-idg -idg-mode cpu -pb-undersampling 4 -grid-with-beam \
+     -mwa-path /astro/mwaeor/jline/software/ \
+     -channels-out 4 -join-channels -fit-spectral-pol 1 \
+     /astro/mwaeor/nbarry/nbarry/wsclean/eg_sim_wsclean_files/data/*.ms 
+
+#     -mwa-path /astro/mwaeor/nbarry/nbarry/gar_scripts/wsclean_scripts/ \
+#-use-idg -idg-mode cpu 
 
 #cd /fred/oz048/MWA/CODE/FHD/fhd_nb_data_woden_points_4pol_calstop/vis_data/wsclean_files/
 
@@ -54,17 +67,17 @@ module load wsclean/2.9
 #    -join-channels -fit-spectral-pol 1 -scale 0.005 \
 #    /fred/oz048/nbarry/run_wsclean/input_data/1061315448/uv_dirty*.ms
 
-cd /astro/mwaeor/nbarry/nbarry/wsclean/fhd_nb_data_woden_points_4pol_calstop/vis_data/nogalaxy_wsclean_files/
+# cd /astro/mwaeor/nbarry/nbarry/wsclean/fhd_nb_data_woden_points_4pol_calstop/vis_data/nogalaxy_wsclean_files/
 
-time wsclean -name 1088975528_8192_decon_nogalaxy \
-    -size 8192 8192 -scale 0.004 \
-    -niter 1000000 -pol I -auto-threshold 1.0 -auto-mask 3 \
-    -weight uniform -multiscale -mgain 0.85 \
-    -mwa-path /astro/mwaeor/nbarry/nbarry/mwapy/data \
-    -j 4 -abs-mem 370 \
-    -grid-with-beam -use-idg -idg-mode cpu -pb-undersampling 4 \
-    -channels-out 4 -join-channels -fit-spectral-pol 1 \
-    /astro/mwaeor/nbarry/nbarry/wsclean/fhd_nb_data_woden_points_4pol_calstop/vis_data/nogalaxy_wsclean_files/1088975528.ms 
+# time wsclean -name 1088975528_8192_decon_nogalaxy \
+#     -size 8192 8192 -scale 0.004 \
+#     -niter 1000000 -pol I -auto-threshold 1.0 -auto-mask 3 \
+#     -weight uniform -multiscale -mgain 0.85 \
+#     -mwa-path /astro/mwaeor/nbarry/nbarry/mwapy/data \
+#     -j 4 -abs-mem 370 \
+#     -grid-with-beam -use-idg -idg-mode cpu -pb-undersampling 4 \
+#     -channels-out 4 -join-channels -fit-spectral-pol 1 \
+#     /astro/mwaeor/nbarry/nbarry/wsclean/fhd_nb_data_woden_points_4pol_calstop/vis_data/nogalaxy_wsclean_files/1088975528.ms 
     # /astro/mwaeor/nbarry/nbarry/wsclean/fhd_nb_data_woden_points_4pol_calstop/vis_data/nogalaxy_wsclean_files/1088974064.ms \
     # /astro/mwaeor/nbarry/nbarry/wsclean/fhd_nb_data_woden_points_4pol_calstop/vis_data/nogalaxy_wsclean_files/1088974184.ms \
     # /astro/mwaeor/nbarry/nbarry/wsclean/fhd_nb_data_woden_points_4pol_calstop/vis_data/nogalaxy_wsclean_files/1088974304.ms \

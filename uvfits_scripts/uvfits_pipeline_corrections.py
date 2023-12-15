@@ -79,7 +79,7 @@ def van_vleck_corrections(obs_id, coarse_id, data_path, output_path, use_aoflagg
         UV.read_mwa_corr_fits(filelist,use_aoflagger_flags=use_aoflagger_flags,correct_cable_len=True,
           remove_coarse_band=remove_coarse_band,correct_van_vleck=True,phase_to_pointing_center=True)
 
-        UV.write_uvfits(output_path + obs_id + '.uvfits', spoof_nonessential=True)
+        UV.write_uvfits(output_path + obs_id + '.uvfits')
 
         return UV
 

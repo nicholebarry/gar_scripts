@@ -84,7 +84,7 @@ done < "$obs_file_name"
 nobs=${#obs_id_array[@]}
 ((nobs=$nobs-1))
 
-message=$(sbatch --mem=$mem -t ${wallclock_time} -n ${ncores} --array=0-$nobs --export=data_path=$data_path,broadband=$broadband,tv=$tv,plots=$plots -o /astro/mwaeor/nbarry/van_vleck_corrected/logs/ssins-%A_%a.out -e /astro/mwaeor/nbarry/van_vleck_corrected/logs/ssins-%A_%a.err /astro/mwaeor/nbarry/gar_scripts/ssins_submit_job.sh ${obs_id_array[@]})
+message=$(sbatch --mem=$mem -t ${wallclock_time} -n ${ncores} --array=0-$nobs --export=data_path=$data_path,broadband=$broadband,tv=$tv,plots=$plots -o /astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/logs/ssins-%A_%a.out -e /astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/logs/ssins-%A_%a.err /astro/mwaeor/nbarry/nbarry/gar_scripts/uvfits_scripts/ssins_submit_job.sh ${obs_id_array[@]})
 message=($message)
 id=`echo ${message[3]}`
 

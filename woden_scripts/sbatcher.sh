@@ -107,25 +107,26 @@ if [ -z ${limit} ]; then
 
 else
    
-   metafits='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/SSINS/'
+   #metafits='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/SSINS/'
+   metafits='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/ti_metafits/'
 
-   sbatch_dir[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved/"
-   skymodel[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved/srclist_pumav3_EoR0LoBESv2_fixedEoR1pietro+ForA_phase1+2_edit.yaml"
-   version[0]="LOBES_extraremoved_2s_80kHz_hbeam_"
-   wallclock_time[0]=5:00:00
-   mem[0]=7gb
+   # sbatch_dir[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved/"
+   # skymodel[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved/srclist_pumav3_EoR0LoBESv2_fixedEoR1pietro+ForA_phase1+2_edit.yaml"
+   # version[0]="LOBES_extraremoved_2s_80kHz_hbeam_"
+   # wallclock_time[0]=5:00:00
+   # mem[0]=7gb
 
-   sbatch_dir[1]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled/"
-   skymodel[1]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled/srclist-woden_CasA_N13_200MHz_rescaled.txt"
-   version[1]="CasA_2s_80kHz_hbeam_"
-   wallclock_time[1]=2:00:00
-   mem[1]=8gb
+   sbatch_dir[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled/"
+   skymodel[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled/srclist-woden_CasA_N13_200MHz_rescaled.txt"
+   version[0]="CasA_2s_80kHz_hbeam_"
+   wallclock_time[0]=2:00:00
+   mem[0]=10gb
 
-   sbatch_dir[2]="/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float/"
-   skymodel[2]="/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float/EDA2_prior_mono_2048_si_gp15.txt"
-   version[2]="EDA2_prior_mono_si_gp15_float_2s_80kHz_hbeam_"
-   wallclock_time[2]=10:00:00
-   mem[2]=25gb
+   # sbatch_dir[2]="/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float/"
+   # skymodel[2]="/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float/EDA2_prior_mono_2048_si_gp15.txt"
+   # version[2]="EDA2_prior_mono_si_gp15_float_2s_80kHz_hbeam_"
+   # wallclock_time[2]=10:00:00
+   # mem[2]=25gb
 
 fi
 
@@ -205,10 +206,13 @@ do
       echo '#SBATCH --array=1-24' >> $sbatch_file
       echo '#SBATCH --output='${sbatch_dir_i}'/'${obs_id}'/slurm-%j_%a.out' >> $sbatch_file
       echo '#SBATCH --error='${sbatch_dir_i}'/'${obs_id}'/slurm-%j_%a.err' >> $sbatch_file
+      echo '#SBATCH --nice=10000' >> $sbatch_file
+      echo '#SBATCH --export=ALL' >> $sbatch_file
  
-      echo 'module use /pawsey/mwa/software/python3/modulefiles' >> $sbatch_file
-      echo 'module load woden/dev' >> $sbatch_file
+      echo 'module use /astro/mwaeor/software/modulefiles/' >> $sbatch_file
+      echo 'module load woden/nichole' >> $sbatch_file
       echo 'cd '${sbatch_dir_i}'/'${obs_id} >> $sbatch_file
+      echo 'export TMPDIR=/nvmetmp/' >> $sbatch_file
 
       echo 'mkdir -p '${sbatch_dir_i}'/data' >> $sbatch_file
       echo 'mkdir -p '${sbatch_dir_i}'/data/'${obs_id} >> $sbatch_file
@@ -312,7 +316,7 @@ do
 done #end of for loop for sbatch_dir
 
 
-#if [ -n ${limit} ]; then
+if [ -n ${limit} ]; then
 
    total_dir="/astro/mwaeor/nbarry/nbarry/woden/total/data/"
    nobs=${#obs_id_array[@]}
@@ -325,10 +329,10 @@ done #end of for loop for sbatch_dir
       sleep 100
    done
 
-   for obs_id in ${obs_id_array[@]}
-   do
-      rsync -r ${total_dir}${obs_id} nbarry@ozstar.swin.edu.au:'/fred/oz048/MWA/CODE/FHD/fhd_nb_data_gd_woden_calstop/woden_models/combined_uvfits/'
-   done
+#   for obs_id in ${obs_id_array[@]}
+#   do
+#      rsync -r ${total_dir}${obs_id} nbarry@ozstar.swin.edu.au:'/fred/oz048/MWA/CODE/FHD/fhd_nb_data_gd_woden_calstop/woden_models/combined_uvfits/'
+#   done
 
-#fi
+fi
 

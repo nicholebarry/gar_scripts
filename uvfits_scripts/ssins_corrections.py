@@ -49,8 +49,11 @@ def main():
 
         ss = SS()
         ss.read(data_path+obs_id +'.uvfits', diff=True)
-        ss.apply_flags(flag_choice='original')
+        #ss.apply_flags(flag_choice='original')
         ins = INS(ss)
+
+        ins.write(data_path+obs_id)
+        ins.write(data_path+obs_id, output_type='z_score')
 
         pol = 1
         pol_name = 'YY'
@@ -98,15 +101,12 @@ def main():
 
 #********************************
 
-        uvd = UVData()
-        uvd.read(data_path+obs_id+'.uvfits')
-        uvf = UVFlag(uvd, waterfall=True, mode='flag')
-        #flags = ins.mask_to_flags()
-        #flags = ins.flag_uvf(uvf)
-        ins.flag_uvf(uvf,inplace=True)
-        #uvutils.apply_uvflag(uvd, flags) #by default, applies OR to flags in uvd and new flag object
-        uvutils.apply_uvflag(uvd, uvf) #by default, applies OR to flags in uvd and new flag object
-        uvd.write_uvfits(data_path + prefix + obs_id + '.uvfits')
+        # uvd = UVData()
+        # uvd.read(data_path+obs_id+'.uvfits')
+        # uvf = UVFlag(uvd, waterfall=True, mode='flag')
+        # ins.flag_uvf(uvf,inplace=True)
+        # uvutils.apply_uvflag(uvd, uvf) #by default, applies OR to flags in uvd and new flag object
+        # uvd.write_uvfits(data_path + prefix + obs_id + '.uvfits')
 
 
 #********************************

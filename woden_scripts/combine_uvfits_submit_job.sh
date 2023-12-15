@@ -16,19 +16,20 @@ mkdir -p ${total_dir}${obs_id}
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/astro/mwaeor/nbarry/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/astro/mwaeor/nbarry/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/astro/mwaeor/nbarry/miniconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/astro/mwaeor/nbarry/miniconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-conda activate pyuvdata
-#module load astropy
+# __conda_setup="$('/astro/mwaeor/nbarry/nbarry/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+# if [ $? -eq 0 ]; then
+#     eval "$__conda_setup"
+# else
+#     if [ -f "/astro/mwaeor/nbarry/nbarry/miniconda3/etc/profile.d/conda.sh" ]; then
+#         . "/astro/mwaeor/nbarry/nbarry/miniconda3/etc/profile.d/conda.sh"
+#     else
+#         export PATH="/astro/mwaeor/nbarry/nbarry/miniconda3/bin:$PATH"
+#     fi
+# fi
+# unset __conda_setup
+# conda activate pyuvdata
+module load cascadelake/1.0
+module load pyuvdata
 
 #Python is dumb
 export TMPDIR=/nvmetmp/

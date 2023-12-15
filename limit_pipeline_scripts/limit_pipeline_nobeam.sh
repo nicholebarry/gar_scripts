@@ -44,8 +44,6 @@ shift $(($OPTIND - 1))
 #Manually set defaults for limit production
 data_path='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/'                  
 output_path='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/'  
-#data_path='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/zenith_deform/'                  
-#output_path='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/zenith_deform/'  
 manta_dir='/astro/mwaeor/nbarry/nbarry/manta-ray-client/'      
 use_aoflagger_flags=0             
 remove_coarse_band=1               
@@ -74,9 +72,9 @@ if [ -z ${ncores} ]; then ncores=1; fi
 #Grab day from filename
 obs_file_basename=$(basename $obs_file_name)
 obs_file_dirname=$(dirname $obs_file_name)
-obs_file_split=$(echo $obs_file_basename | tr "." "\n")
+obs_file_split=$(echo $obs_file_basename | tr "_" "\n")
 obs_file_split_arr=($obs_file_split)
-day_name=${obs_file_split_arr[0]}
+day=${obs_file_split_arr[0]}
 
 #Read the obs file and put into an array, skipping blank lines if they exist
 i=0
@@ -84,17 +82,14 @@ while read line
 do
    if [ ! -z "$line" ]; then
       ssins_obs_id_array[$i]=$line
-      #obs_id_array[$i]=$line
       i=$((i + 1))
    fi
 done < "$obs_file_name"
 
-
-
 # #Make csv file for download
 # printf 'obs_id=%s, job_type=d, download_type=vis\n' "${obs_id_array[@]}" > ${manta_dir}${day_name[0]}.csv
 
-source /astro/mwaeor/nbarry/nbarry/local_pyuvdata2/bin/activate
+# source ${manta_dir}env/bin/activate
 # mwa_client -c ${manta_dir}${day_name[0]}.csv -d ${data_path}
 
 # cd ${data_path}
@@ -127,43 +122,40 @@ source /astro/mwaeor/nbarry/nbarry/local_pyuvdata2/bin/activate
 #    obs_dir="$(dirname "${obs_file_name}")"
 #    obs_file="$(basename "${obs_file_name}")"
 #    day_name=( $(echo $obs_file | tr "." "\n") )
-#    printf '%s\n' "${ssins_obs_id_array[@]}" > ${obs_dir}/${day_name[0]}_ssins.txt
+   # printf '%s\n' "${ssins_obs_id_array[@]}" > ${obs_dir}/${day_name[0]}_ssins.txt
 
-#    rsync  ${obs_dir}/${day_name[0]}_ssins.txt nbarry@ozstar.swin.edu.au:'/home/nbarry/MWA/pipeline_scripts/bash_scripts/ozstar/obs_list/2014/'${day_name[0]}_ssins.txt
+   # rsync  ${obs_dir}/${day_name[0]}_ssins.txt nbarry@ozstar.swin.edu.au:'/home/nbarry/MWA/pipeline_scripts/bash_scripts/ozstar/obs_list/2014/'${day_name[0]}_ssins.txt
 
 
-#    for obs_id in ${ssins_obs_id_array[@]}
-#    do
-#       mv ${output_path}${obs_id}.metafits ${output_path}SSINS/
-#       rsync  ${output_path}SSINS/${obs_id}.metafits nbarry@ozstar.swin.edu.au:'/fred/oz048/MWA/data/2014/van_vleck_corrected/coarse_corr_no_ao/'${obs_id}'.metafits'
-#       rsync  ${output_path}SSINS/${obs_id}.uvfits nbarry@ozstar.swin.edu.au:'/fred/oz048/MWA/data/2014/van_vleck_corrected/coarse_corr_no_ao/'${obs_id}'.uvfits'
+   # for obs_id in ${ssins_obs_id_array[@]}
+   # do
+   #    mv ${output_path}${obs_id}.metafits ${output_path}SSINS/
+   #    rsync  ${output_path}SSINS/${obs_id}.metafits nbarry@ozstar.swin.edu.au:'/fred/oz048/MWA/data/2014/van_vleck_corrected/coarse_corr_no_ao/'${obs_id}'.metafits'
+   #    rsync  ${output_path}SSINS/${obs_id}.uvfits nbarry@ozstar.swin.edu.au:'/fred/oz048/MWA/data/2014/van_vleck_corrected/coarse_corr_no_ao/'${obs_id}'.uvfits'
       
-#    done
+   # done
 
 ### Taken from sbatcher -- defaults for three separate models in longrun
 
 metafits='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/SSINS/'
 
-#sbatch_dir[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved/"
-sbatch_dir[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved/"
-skymodel[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved/srclist_pumav3_EoR0LoBESv2_fixedEoR1pietro+ForA_phase1+2_edit.yaml"
-version[0]="LOBES_extraremoved_2s_80kHz_hbeam_"
-wallclock_time[0]=5:00:00
-mem[0]=7gb
+# sbatch_dir[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved/"
+# skymodel[0]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved/srclist_pumav3_EoR0LoBESv2_fixedEoR1pietro+ForA_phase1+2_edit.yaml"
+# version[0]="LOBES_extraremoved_2s_80kHz_hbeam_"
+# wallclock_time[0]=5:00:00
+# mem[0]=7gb
 
-#sbatch_dir[1]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled/"
-sbatch_dir[1]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled/"
-skymodel[1]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled/srclist-woden_CasA_N13_200MHz_rescaled.txt"
-version[1]="CasA_2s_80kHz_hbeam_"
-wallclock_time[1]=3:00:00
-mem[1]=10gb
+# sbatch_dir[1]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled/"
+# skymodel[1]="/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled/srclist-woden_CasA_N13_200MHz_rescaled.txt"
+# version[1]="CasA_2s_80kHz_hbeam_"
+# wallclock_time[1]=3:00:00
+# mem[1]=10gb
 
-#sbatch_dir[2]="/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float/"
-sbatch_dir[2]="/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float/"
-skymodel[2]="/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float/EDA2_prior_mono_2048_si_gp15.txt"
-version[2]="EDA2_prior_mono_si_gp15_float_2s_80kHz_hbeam_"
-wallclock_time[2]=10:00:00
-mem[2]=25gb
+sbatch_dir="/astro/mwaeor/nbarry/nbarry/woden/galactic/nobeam/EDA2_prior_mono_si_gp15_float/"
+skymodel="/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float/EDA2_prior_mono_2048_si_gp15.txt"
+version="EDA2_prior_mono_si_gp15_float_2s_80kHz_hbeam_"
+wallclock_time=10:00:00
+mem=32gb
 
 partition=gpuq
 nodes=1
@@ -220,11 +212,9 @@ do
       echo '#SBATCH --output='${sbatch_dir_i}'/'${obs_id}'/slurm-%j_%a.out' >> $sbatch_file
       echo '#SBATCH --error='${sbatch_dir_i}'/'${obs_id}'/slurm-%j_%a.err' >> $sbatch_file
       echo '#SBATCH --nice=10000' >> $sbatch_file
-      echo '#SBATCH --export=ALL' >> $sbatch_file
-
+ 
       echo 'module use /astro/mwaeor/software/modulefiles/' >> $sbatch_file
       echo 'module load woden/nichole' >> $sbatch_file
-      echo 'source /astro/mwaeor/nbarry/nbarry/local_pyuvdata2/bin/activate' >> $sbatch_file
       echo 'cd '${sbatch_dir_i}'/'${obs_id} >> $sbatch_file
       echo 'export TMPDIR=/nvmetmp/' >> $sbatch_file
 
@@ -240,13 +230,11 @@ do
       echo '    --band_nums=$SLURM_ARRAY_TASK_ID \' >> $sbatch_file
       echo '    --output_uvfits_prepend='${sbatch_dir_i}'/data/'${obs_id}'/'${version_i}' \' >> $sbatch_file
       echo '    --longitude=116.67081523611111 --latitude=-26.703319405555554 --array_height=377.827 \' >> $sbatch_file
-      echo '    --primary_beam=MWA_FEE_interp \' >> $sbatch_file
-#      echo '    --primary_beam=MWA_analy \' >> $sbatch_file
+      echo '    --primary_beam=None \' >> $sbatch_file
       echo '    --sky_crop_components \' >> $sbatch_file
       echo '    --precision=float \' >> $sbatch_file
       echo '    --array_layout=/astro/mwaeor/nbarry/nbarry/gar_scripts/woden_scripts/hyperdrive_ant_locations.txt' >> $sbatch_file
 
-if [ `ls $sbatch_dir_i/data/$obs_id/*uvfits | wc -l` -le 23 ]; then
       message=$(sbatch $sbatch_file)
       message=($message)
       id=`echo ${message[3]}`
@@ -256,7 +244,6 @@ if [ `ls $sbatch_dir_i/data/$obs_id/*uvfits | wc -l` -le 23 ]; then
       while [ `squeue -u $(whoami) | grep ${id_list[$i]} | wc -l` -ge 25 ]; do
          sleep 100
       done
-fi
 
    done
 
@@ -333,20 +320,20 @@ fi
 done #end of for loop for sbatch_dir
 
 
-   total_dir="/astro/mwaeor/nbarry/nbarry/woden/total/data/"
-   nobs=${#ssins_obs_id_array[@]}
-   ((nobs=$nobs-1))
-   message=$(sbatch --mem=20gb -t 02:00:00 -n 1 --array=0-$nobs /astro/mwaeor/nbarry/nbarry/gar_scripts/woden_scripts/combine_uvfits_submit_job.sh ${ssins_obs_id_array[@]})
-   message=($message)
-   id=`echo ${message[3]}`
+   # total_dir="/astro/mwaeor/nbarry/nbarry/woden/total/data/"
+   # nobs=${#ssins_obs_id_array[@]}
+   # ((nobs=$nobs-1))
+   # message=$(sbatch --mem=20gb -t 02:00:00 -n 1 --array=0-$nobs /astro/mwaeor/nbarry/nbarry/gar_scripts/woden_scripts/combine_uvfits_submit_job.sh ${ssins_obs_id_array[@]})
+   # message=($message)
+   # id=`echo ${message[3]}`
 
-   while [ `squeue -u $(whoami) | grep ${id} | wc -l` -ge 1 ]; do
-      sleep 100
-   done
+   # while [ `squeue -u $(whoami) | grep ${id} | wc -l` -ge 1 ]; do
+   #    sleep 100
+   # done
 
    for obs_id in ${ssins_obs_id_array[@]}
    do
-      rsync -r ${total_dir}${obs_id} nbarry@ozstar.swin.edu.au:'/fred/oz048/MWA/CODE/FHD/fhd_nb_data_gd_woden_calstop/woden_models/combined_uvfits/'
+      rsync -r ${sbatch_dir}/data/${obs_id} nbarry@ozstar.swin.edu.au:'/fred/oz048/MWA/CODE/FHD/fhd_nb_data_gd_woden_calstop/woden_models/galactic/nobeam/'
    done
 
 

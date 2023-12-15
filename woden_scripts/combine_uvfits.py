@@ -3,8 +3,6 @@ import os
 import glob
 from pyuvdata import UVData, UVFlag
 from pyuvdata import utils as uvutils
-import matplotlib.pyplot as plt
-from matplotlib import cm
 import argparse
 
 #********************************
@@ -26,12 +24,16 @@ def main():
 
     # Common filename for the three components
     dir_lobes = '/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved/data/'
+    #dir_lobes = '/astro/mwaeor/nbarry/nbarry/woden/extragalactic/LOBES_extraremoved_an/data/'
     version_lobes = 'LOBES_extraremoved_2s_80kHz_hbeam__band'
     dir_casa = '/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled/data/'
+    #dir_casa = '/astro/mwaeor/nbarry/nbarry/woden/extragalactic/CasA_N13_rescaled_an/data/'
     version_casa = 'CasA_2s_80kHz_hbeam__band'
     dir_eda = '/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float/data/'
+    #dir_eda = '/astro/mwaeor/nbarry/nbarry/woden/galactic/EDA2_prior_mono_si_gp15_float_an/data/'
     version_eda = 'EDA2_prior_mono_si_gp15_float_2s_80kHz_hbeam__band'
     dir_total = '/astro/mwaeor/nbarry/nbarry/woden/total/data/'
+    #dir_total = '/astro/mwaeor/nbarry/nbarry/woden/total_an/data/'
     version_total = 'EDA2_LoBES_CasA_2s_80kHz_hbeam__band'
 
     for coarse_i in coarse_list:
