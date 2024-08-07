@@ -42,11 +42,9 @@ done
 shift $(($OPTIND - 1))
 
 #Manually set defaults for limit production
-data_path='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/'                  
-output_path='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/coarse_corr_no_ao/'  
-#data_path='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/zenith_deform/'                  
-#output_path='/astro/mwaeor/nbarry/nbarry/van_vleck_corrected/zenith_deform/'  
-manta_dir='/astro/mwaeor/nbarry/nbarry/manta-ray-client/'      
+data_path='/scratch/mwaeor/nbarry/pipeline_data/download/'                  
+output_path='/scratch/mwaeor/nbarry/pipeline_data/vv_cc/'  
+manta_dir='/scratch/mwaeor/nbarry/manta-ray-client/'      
 use_aoflagger_flags=0             
 remove_coarse_band=1               
 broadband=1    
@@ -92,19 +90,19 @@ done < "$obs_file_name"
 
 
 # #Make csv file for download
-# printf 'obs_id=%s, job_type=d, download_type=vis\n' "${obs_id_array[@]}" > ${manta_dir}${day_name[0]}.csv
+printf 'obs_id=%s, job_type=d, download_type=vis\n' "${obs_id_array[@]}" > ${manta_dir}${day_name[0]}.csv
 
-source /astro/mwaeor/nbarry/nbarry/local_pyuvdata2/bin/activate
-# mwa_client -c ${manta_dir}${day_name[0]}.csv -d ${data_path}
+source /scratch/mwaeor/nbarry/python_env/bin/activate
+mwa_client -c ${manta_dir}${day_name[0]}.csv -d ${data_path}
 
-# cd ${data_path}
-# for FILE in *.tar; do tar -xvf $FILE; done
-# for FILE in *.zip; do unzip $FILE; done
+cd ${data_path}
+for FILE in *.tar; do tar -xvf $FILE; done
+for FILE in *.zip; do unzip $FILE; done
 
-# nobs=${#obs_id_array[@]}
-# ((nobs=$nobs-1))
+nobs=${#obs_id_array[@]}
+((nobs=$nobs-1))
 
-# message=$(sbatch --mem=$mem -t ${wallclock_time} -n ${ncores} --tmp=20G --array=0-$nobs --export=data_path=$data_path,output_path=$output_path,use_aoflagger_flags=$use_aoflagger_flags,remove_coarse_band=$remove_coarse_band,broadband=$broadband,tv=$tv,plots=$plots, -o ${output_path}/logs/uvfits-%A_%a.out -e ${output_path}/logs/uvfits-%A_%a.err /astro/mwaeor/nbarry/nbarry/gar_scripts/uvfits_scripts/uvfits_pipeline_submit_job.sh ${obs_id_array[@]})
+# message=$(sbatch --mem=$mem -t ${wallclock_time} -n ${ncores} --tmp=20G --array=0-$nobs --export=data_path=$data_path,output_path=$output_path,use_aoflagger_flags=$use_aoflagger_flags,remove_coarse_band=$remove_coarse_band,broadband=$broadband,tv=$tv,plots=$plots, -o ${output_path}/logs/uvfits-%A_%a.out -e ${output_path}/logs/uvfits-%A_%a.err /scratch/mwaeor/nbarry/gar_scripts/uvfits_scripts/uvfits_pipeline_submit_job.sh ${obs_id_array[@]})
 # message=($message)
 # id=`echo ${message[3]}`
 

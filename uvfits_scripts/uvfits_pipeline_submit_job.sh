@@ -21,8 +21,11 @@ echo
 #Python is dumb
 export TMPDIR=/nvmetmp/
 
-source /astro/mwaeor/nbarry/nbarry/local_pyuvdata2/bin/activate
-python /astro/mwaeor/nbarry/nbarry/gar_scripts/uvfits_scripts/uvfits_pipeline_corrections.py --obs_id=$obs_id --data_path=$data_path --output_path=$output_path --use_aoflagger_flags=$use_aoflagger_flags --remove_coarse_band=$remove_coarse_band --broadband=$broadband --tv=$tv --plots=$plots
+source /scratch/mwaeor/nbarry/python_env/bin/activate
+# module use /pawsey/mwa/software/python3/modulefiles
+# module load python aoflagger/v3.4.0
+
+python /scratch/mwaeor/nbarry/gar_scripts/uvfits_scripts/uvfits_pipeline_corrections.py --obs_id=$obs_id --data_path=$data_path --output_path=$output_path --use_aoflagger_flags=$use_aoflagger_flags --remove_coarse_band=$remove_coarse_band --broadband=$broadband --tv=$tv --plots=$plots
 
 if [ $? -eq 0 ]
 then

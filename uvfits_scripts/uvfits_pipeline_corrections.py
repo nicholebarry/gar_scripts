@@ -7,6 +7,7 @@ from pyuvdata import utils as uvutils
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import argparse
+#import aoflagger
 
 from SSINS import SS
 from SSINS import MF
@@ -20,7 +21,7 @@ def main():
 
         # Parse the command line inputs. 
         parser=argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description=
-                "Apply van vleck corrections to gpubox files, apply SSINS to unaveraged corrected data, and then save an averaged uvfits. \n" +
+                "Apply new aoflagger strategies to gpubox files, van vleck corrections to gpubox files, apply SSINS to unaveraged corrected data, and then save an averaged uvfits. \n" +
                 "Example call: \n"
                 "python van_vleck_corrector.py --obsfile_name=zenith.txt --data_path='/fred/oz048/MWA/data/2013/van_vleck_corrected/' ")
         parser.add_argument("-o", "--obs_id", required=True,
@@ -52,15 +53,17 @@ def main():
         coarse_list = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
                 '20','21','22','23','24'] #do them all at once
 
-        UV = van_vleck_corrections(obs_id, coarse_list, data_path, tmp_path, args.use_aoflagger_flags, args.remove_coarse_band)
+        #aoflagger(obs_id, coarse_list, data_path)
 
-        UV = SSINS(UV, obs_id, output_path, tmp_path, args.plots, args.broadband, args.tv, prefix)        
+        UV = van_vleck_corrections(obs_id, coarse_list, data_path, output_path, args.use_aoflagger_flags, args.remove_coarse_band)
 
-        UV = time_integration(UV)
-        UV = freq_integration(UV)
-        UV.write_uvfits(output_path + prefix + obs_id + '.uvfits')
+        # UV = SSINS(UV, obs_id, output_path, tmp_path, args.plots, args.broadband, args.tv, prefix)        
 
-        flag_stats(output_path + prefix + obs_id + '.uvfits', output_path + prefix + obs_id + '_flag_stats.txt')
+        # UV = time_integration(UV)
+        # UV = freq_integration(UV)
+        # UV.write_uvfits(output_path + prefix + obs_id + '.uvfits')
+
+        # flag_stats(output_path + prefix + obs_id + '.uvfits', output_path + prefix + obs_id + '_flag_stats.txt')
 
 #********************************
 def van_vleck_corrections(obs_id, coarse_id, data_path, output_path, use_aoflagger_flags, remove_coarse_band):
@@ -121,8 +124,8 @@ def SSINS(UV, obs_id, output_path, tmp_path, plots, broadband, tv, prefix):
                       'TV8': [1.88e8, 1.95e8],
                       'TV9': [1.95e8, 2.02e8]}
 
-        ss = SS()
-        ss.read(tmp_path+obs_id +'.uvfits', diff=True)
+        ss = SS(UV)
+        #ss.read(tmp_path+obs_id +'.uvfits', diff=True)
         ss.apply_flags(flag_choice='original')
         ins = INS(ss)
 
@@ -169,10 +172,11 @@ def SSINS(UV, obs_id, output_path, tmp_path, plots, broadband, tv, prefix):
                     midpoint=True)
                 fig.savefig(output_path + prefix + obs_id +'_'+ pol_name + '_masked_SSINS.png')
 
+        ins.write(prefix, output_type='mask', clobber=True)
 
-        uvf = UVFlag(UV, waterfall=True, mode='flag')
-        ins.flag_uvf(uvf,inplace=True)
-        uvutils.apply_uvflag(UV, uvf) #by default, applies OR to flags in uvd and new flag object
+        # uvf = UVFlag(UV, waterfall=True, mode='flag')
+        # ins.flag_uvf(uvf,inplace=True)
+        # uvutils.apply_uvflag(UV, uvf) #by default, applies OR to flags in uvd and new flag object
 
         return UV
 
