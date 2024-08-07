@@ -7,7 +7,7 @@ from pyuvdata import utils as uvutils
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import argparse
-#import aoflagger
+import subprocess
 
 from SSINS import SS
 from SSINS import MF
@@ -32,6 +32,8 @@ def main():
                 help="Path to the output")
         parser.add_argument("-a", "--use_aoflagger_flags", required=False, default=True, type=str2bool,
                 help="Use aoflagger mwaf flags, default true")
+        parser.add_argument("-r", "--redo_aoflagger_flags", required=False, default=None, type=str,
+                help="Path to bespoke lua file to redo aoflagger flags")
         parser.add_argument("-c", "--remove_coarse_band", required=False, default=False, type=str2bool,
                 help="Remove the theoretical coarse band shape, default flase")
         parser.add_argument("-b", "--broadband", required=False, default=True, type=str2bool,
@@ -45,6 +47,13 @@ def main():
         obs_id = args.obs_id
         data_path = args.data_path
         output_path = args.output_path
+        use_aoflagger_flags = args.use_aoflagger_flags
+        redo_aoflagger_flags = args.redo_aoflagger_flags
+        remove_coarse_band = args.remove_coarse_band
+        broadband = args.broadband
+        tv = args.tv
+        plots = args.plots
+
         prefix = 'SSINS/'
         os.makedirs(output_path + prefix, exist_ok=True)
         tmp_path='/nvmetmp/'
@@ -53,21 +62,26 @@ def main():
         coarse_list = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
                 '20','21','22','23','24'] #do them all at once
 
-        #aoflagger(obs_id, coarse_list, data_path)
+        UV = van_vleck_corrections(obs_id, coarse_list, data_path, use_aoflagger_flags, 
+                                   remove_coarse_band, redo_aoflagger_flags, tmp_path)
 
-        UV = van_vleck_corrections(obs_id, coarse_list, data_path, output_path, args.use_aoflagger_flags, args.remove_coarse_band)
+        if redo_aoflagger_flags:
+                # Run aoflagger on the ms file
+                UVFlag_ao = aoflagger(obs_id, tmp_path, redo_aoflagger_flags)
 
-        # UV = SSINS(UV, obs_id, output_path, tmp_path, args.plots, args.broadband, args.tv, prefix)        
+        UV = SSINS(UV, UVFlag_ao, obs_id, output_path, tmp_path, plots, broadband, tv, prefix)        
 
-        # UV = time_integration(UV)
-        # UV = freq_integration(UV)
-        # UV.write_uvfits(output_path + prefix + obs_id + '.uvfits')
+        UV = time_integration(UV)
+        UV = freq_integration(UV)
+        UV.write_uvfits(output_path + prefix + obs_id + '.uvfits')
 
-        # flag_stats(output_path + prefix + obs_id + '.uvfits', output_path + prefix + obs_id + '_flag_stats.txt')
+        flag_stats(output_path + prefix + obs_id + '.uvfits', output_path + prefix + obs_id + '_flag_stats.txt')
 
 #********************************
-def van_vleck_corrections(obs_id, coarse_id, data_path, output_path, use_aoflagger_flags, remove_coarse_band):
-        # Apply van vleck corrections (and other options) to gpubox files and write a uvfits
+def van_vleck_corrections(obs_id, coarse_id, data_path, use_aoflagger_flags, remove_coarse_band, 
+                          redo_aoflagger_flags, tmp_path):
+        # Apply van vleck corrections (and other options) to gpubox files and return a corrected UV object
+        # Optionally write a ms for aoflagger in the tmp directory
 
         UV = UVData()
 
@@ -82,9 +96,31 @@ def van_vleck_corrections(obs_id, coarse_id, data_path, output_path, use_aoflagg
         UV.read_mwa_corr_fits(filelist,use_aoflagger_flags=use_aoflagger_flags,correct_cable_len=True,
           remove_coarse_band=remove_coarse_band,correct_van_vleck=True,phase_to_pointing_center=True)
 
-        UV.write_uvfits(output_path + obs_id + '.uvfits')
+        if redo_aoflagger_flags:
+                UV.write_ms(tmp_path + obs_id + '.ms', clobber=True)
 
         return UV
+
+#********************************
+def aoflagger(obs_id, tmp_path, redo_aoflagger_flags):
+        # Run aoflagger on the ms file and return a UV object with just the flag array
+
+        command = f"aoflagger -strategy {redo_aoflagger_flags} -combine-spws {tmp_path + obs_id + '.ms'}"
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+        # Check if the command was successful
+        if result.returncode == 0:
+                # Create a UVData object
+                UV_ao = UVData()
+                # Read only the flags from the MS file
+                UV_ao.read_ms(tmp_path + obs_id + '.ms', read_data=False, read_flags=True)
+                # Create a UVFlag object from the UVData object's flag_array
+                UVFlag_ao = UVFlag(UV_ao, mode='flag', copy_flags=True)
+                return UVFlag_ao
+        else:
+                print("Error running aoflagger: ", result.stderr)
+                return None
+
 
 #********************************
 def freq_integration(UV):
@@ -115,7 +151,7 @@ def time_integration(UV):
 
 #********************************
 
-def SSINS(UV, obs_id, output_path, tmp_path, plots, broadband, tv, prefix):
+def SSINS(UV, UVFlag_ao, obs_id, output_path, tmp_path, plots, broadband, tv, prefix):
         # Apply SSINS flagging and return a UV object
 
         sig_thresh = 5
@@ -172,11 +208,15 @@ def SSINS(UV, obs_id, output_path, tmp_path, plots, broadband, tv, prefix):
                     midpoint=True)
                 fig.savefig(output_path + prefix + obs_id +'_'+ pol_name + '_masked_SSINS.png')
 
-        ins.write(prefix, output_type='mask', clobber=True)
+        # ins.write(prefix, output_type='mask', clobber=True)
 
-        # uvf = UVFlag(UV, waterfall=True, mode='flag')
-        # ins.flag_uvf(uvf,inplace=True)
-        # uvutils.apply_uvflag(UV, uvf) #by default, applies OR to flags in uvd and new flag object
+        uvf = UVFlag(UV, waterfall=True, mode='flag')
+        ins.flag_uvf(uvf,inplace=True)
+        uvutils.apply_uvflag(UV, uvf) #by default, applies OR to flags in uvd and new flag object
+
+        # Apply aoflagger flags if they exist
+        if UVFlag_ao is not None:
+                uvutils.apply_uvflag(UV, UVFlag_ao)
 
         return UV
 
